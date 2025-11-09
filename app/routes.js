@@ -11,7 +11,7 @@ module.exports = function (app, passport, db) {
   app.get('/profile', isLoggedIn, function (req, res) {
     db.collection('trips').find().toArray((err, result) => {
       if (err) return console.log(err)
-        const current = result.find((item) => item.trip === decodeURIComponent(req.query.trip))
+      const current = result.find((item) => item.trip === decodeURIComponent(req.query.trip))
       res.render('profile.ejs', {
         user: req.user,
         messages: result,
@@ -31,13 +31,17 @@ module.exports = function (app, passport, db) {
   // message board routes ===============================================================
 
   app.post('/createTrip', (req, res) => {
-    db.collection('trips').save(
-      { entry2: req.body.entry2, entry3: req.body.entry3, date: req.body.date, location: req.body.location }, (err, result) => {
-      if (err) return console.log(err)
-      console.log('saved to database')
-      // res.redirect('/profile')
-      res.redirect(`/profile?date=${encodeURIComponent(req.body.date)}`)
-    })
+    db.collection('trips').findOneAndUpdate(
+      { date: req.body.date },
+      // db.collection('trips').save(
+      { $set: { entry2: req.body.entry2, entry3: req.body.entry3, date: req.body.date, location: req.body.location } },
+      { upsert: true }, //upsert tells the object if you can't find a matching record, create a new one.
+      (err, result) => {
+        if (err) return console.log(err)
+        console.log('saved to database')
+        // res.redirect('/profile')
+        res.redirect(`/profile?date=${encodeURIComponent(req.body.date)}`)
+      })
   })
 
   app.put('/messages', (req, res) => {
@@ -66,6 +70,16 @@ module.exports = function (app, passport, db) {
       res.send('Message deleted!')
     })
   })
+
+  // Get one trip by date
+  app.get('/getTrip', isLoggedIn, (req, res) => {
+    const tripDate = req.query.date;
+    db.collection('trips').findOne({ date: tripDate }, (err, trip) => {
+      if (err) return res.status(500).send(err);
+      if (!trip) return res.status(404).send('Trip not found');
+      res.json(trip);
+    });
+  });
 
   // =============================================================================
   // AUTHENTICATE (FIRST LOGIN) ==================================================
