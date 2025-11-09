@@ -12,3 +12,5 @@ During development, I performed extensive code cleanup to improve readability, c
 
 Lessons Learned:
 Working with MongoDB Atlas taught me about cloud databases and the advantages of managed database services over local installations.
+
+<img width="1412" height="697" alt="wishlist app" src="https://github.com/user-attachments/assets/71bd9726-b705-4eaf-a04c-1e1729d1d909" />
